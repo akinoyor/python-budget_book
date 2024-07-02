@@ -1,14 +1,22 @@
 import tkinter as tk
+from tkinter import messagebox
+import re
 import sys
 WINDOW_SIZE="500x200"
 
 class Record:
-    def _init_(self, date, amount, content):
+    def __init__(self, date, amount, content):
         self.date = date
         self.amount = amount
         self.content = content
 
-def input_window():
+    # 内容確認用　あとで消す
+    def __str__(self):
+        return f"日付: {self.date}, 金額: {self.amount}, 内容: {self.content}"
+
+def input_window_boot():
+    global date_entry, amount_entry, content_entry, input_window
+
     input_window = tk.Tk()
     input_window.title('入力')
     input_window.geometry(WINDOW_SIZE)
@@ -20,11 +28,11 @@ def input_window():
 
     date_label = tk.Label(entry_frame, text='日付')
     date_entry = tk.Entry(entry_frame)
-    amount_label = tk.Label(entry_frame, text='金額')
-    amount_entry = tk.Entry(entry_frame)
     content_label = tk.Label(entry_frame, text='内容')
     content_entry = tk.Entry(entry_frame)
-    entry_button = tk.Button(input_buttons_frame, text='追加', command=input(date_entry, amount_entry, content_entry))
+    amount_label = tk.Label(entry_frame, text='金額')
+    amount_entry = tk.Entry(entry_frame)
+    entry_button = tk.Button(input_buttons_frame, text='追加', command=input)
     close_button = tk.Button(input_buttons_frame, text='閉じる', command=input_window.destroy)
 
     date_label.grid(row=0, column=0, padx=5)
@@ -40,11 +48,26 @@ def input_window():
 
     input_window.mainloop()
 
-def input(date_entry, amount_entry, content_entry):
+def input():
     date = date_entry.get()
     amount = amount_entry.get()
     content = content_entry.get()
-    print(date,amount,content)
+    
+    if not date or not amount or not content:
+        messagebox.showerror('エラー', '全てのフィールドを入力してください')
+        input_window.lift()
+        return
+    if not re.match(r'^\d{4}/\d{1,2}/\d{1,2}$', date):
+        messagebox.showerror('エラー', '日付はYYYY/MM/DD形式で入力してください')
+        input_window.lift()
+        return
+    if not amount.isdigit():
+        messagebox.showerror('エラー', '金額は数字で入力してください')
+        input_window.lift()
+        return
+    
+    new_record = Record(date, amount, content) 
+    print(new_record)
 
 def totalling_window():
     totalling_window = tk.Tk()
@@ -59,7 +82,7 @@ root = tk.Tk()
 root.title('家計簿アプリ')
 root.geometry(WINDOW_SIZE)
 
-input_button = tk.Button(root, text='入力', command=input_window)
+input_button = tk.Button(root, text='入力', command=input_window_boot)
 totalling_button = tk.Button(root, text='集計', command=totalling_window)
 exit_button = tk.Button(root, text='exit', command=sys.exit)
 
