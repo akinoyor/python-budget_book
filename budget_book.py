@@ -2,8 +2,32 @@ import tkinter as tk
 from tkinter import messagebox
 import re
 import sys
+import pickle
+from pathlib import Path
+import os
+dir = os.path.dirname(__file__)
+relative_path = 'pickled.pkl'
+file_path = os.path.join(dir,relative_path)
 WINDOW_SIZE="500x200"
-
+class Total:
+    def __init__(self):      
+        with open(file_path, 'rb') as f:
+            records = pickle.load(f)
+            if(records):
+                self.records = records
+            else:
+                self.records = []
+        
+    def add_record(self, record):
+        self.records.append(record)
+    def write_records(self):
+        with open(file_path, 'wb') as f:
+            pickle.dump(self.records, f)
+   
+        # 中身確認用あとで消す
+    def print_records(self):
+        for record in self.records:
+            print(record)
 class Record:
     def __init__(self, date, amount, content):
         self.date = date
@@ -15,8 +39,9 @@ class Record:
         return f"日付: {self.date}, 金額: {self.amount}, 内容: {self.content}"
 
 def input_window_boot():
-    global date_entry, amount_entry, content_entry, input_window
+    global date_entry, amount_entry, content_entry, input_window, total
 
+    total = Total()
     input_window = tk.Tk()
     input_window.title('入力')
     input_window.geometry(WINDOW_SIZE)
@@ -57,7 +82,7 @@ def input():
         messagebox.showerror('エラー', '全てのフィールドを入力してください')
         input_window.lift()
         return
-    if not re.match(r'^\d{4}/\d{1,2}/\d{1,2}$', date):
+    if not re.match(r'^\d{4}/\d{2}/\d{2}$', date):
         messagebox.showerror('エラー', '日付はYYYY/MM/DD形式で入力してください')
         input_window.lift()
         return
@@ -67,7 +92,10 @@ def input():
         return
     
     new_record = Record(date, amount, content) 
-    print(new_record)
+    print('-----------')
+    total.add_record(new_record)
+    total.print_records()
+    total.write_records()
 
 def totalling_window():
     totalling_window = tk.Tk()
