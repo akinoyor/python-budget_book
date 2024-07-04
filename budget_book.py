@@ -7,6 +7,7 @@ from pathlib import Path
 import os
 import datetime
 
+today = datetime.datetime.today().date()
 dir = os.path.dirname(__file__)
 file_name = 'pickled.pkl'
 file_path = os.path.join(dir, file_name)
@@ -54,17 +55,19 @@ def input_window_boot():
     input_window.geometry(WINDOW_SIZE)
     entry_frame = tk.Frame(input_window)
     input_buttons_frame = tk.Frame(input_window)
-    entry_frame.grid(row=0, sticky=tk.EW)
-    input_buttons_frame.grid(row=1, column=0, pady=10,sticky=tk.EW)
+    entry_frame.grid(row=0, column=0, sticky=tk.EW)
+    input_buttons_frame.grid(row=1, column=0, pady=10, sticky=tk.EW)
     input_window.grid_columnconfigure(0, weight=1)
 
     date_label = tk.Label(entry_frame, text='日付')
     date_entry = tk.Entry(entry_frame)
+    date_entry.insert(0, today)
     content_label = tk.Label(entry_frame, text='内容')
     content_entry = tk.Entry(entry_frame)
     amount_label = tk.Label(entry_frame, text='金額')
     amount_entry = tk.Entry(entry_frame)
     entry_button = tk.Button(input_buttons_frame, text='追加', command=input)
+    entry_clear_button = tk.Button(input_buttons_frame, text='削除', command=entry_clear)
     close_button = tk.Button(input_buttons_frame, text='閉じる', command=input_window.destroy)
 
     date_label.grid(row=0, column=0, padx=5)
@@ -75,14 +78,22 @@ def input_window_boot():
     amount_entry.grid(row=1, column=2, padx=5, sticky=tk.EW)
     entry_frame.grid_columnconfigure(1, weight=3, minsize='200')
     entry_frame.grid_columnconfigure(2, weight=1, minsize='100')
-    entry_button.grid(row=0, column=0, padx=130)
-    close_button.grid(row=0, column=1)
+    entry_button.grid(row=0, column=0)
+    entry_clear_button.grid(row=0, column=1)
+    close_button.grid(row=0, column=2)
+    for i in range(3):
+        input_buttons_frame.grid_columnconfigure(i, weight=1)
 
     input_window.mainloop()
 
+def entry_clear():
+    date_entry.delete(0, tk.END)
+    date_entry.insert(0, today)
+    content_entry.delete(0, tk.END)
+    amount_entry.delete(0, tk.END)
+
 def input():
-    date = date_entry.get()
-    
+    date = date_entry.get()   
     amount = amount_entry.get()
     content = content_entry.get()
     
@@ -90,7 +101,7 @@ def input():
         messagebox.showerror('エラー', '全てのフィールドを入力してください')
         input_window.lift()
         return
-    if not re.match(r'^\d{4}/\d{2}/\d{2}$', date):
+    if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
         messagebox.showerror('エラー', '日付はYYYY/MM/DD形式で入力してください')
         input_window.lift()
         return
@@ -99,14 +110,15 @@ def input():
         input_window.lift()
         return
     
-    date_format = datetime.datetime.strptime(date, '%Y/%m/%d').date()
+    date_format = datetime.datetime.strptime(date, '%Y-%m-%d').date()
     new_record = Record(date_format, amount, content) 
     print('-----------')
     total.add_record(new_record)
     total.print_records()
     total.write_records()
+    entry_clear()
 
-def totalling_window():
+def totalling_window_boot():
     totalling_window = tk.Tk()
     totalling_window.title('集計')
     totalling_window.geometry(WINDOW_SIZE)
@@ -120,7 +132,7 @@ root.title('家計簿アプリ')
 root.geometry(WINDOW_SIZE)
 
 input_button = tk.Button(root, text='入力', command=input_window_boot)
-totalling_button = tk.Button(root, text='集計', command=totalling_window)
+totalling_button = tk.Button(root, text='集計', command=totalling_window_boot)
 exit_button = tk.Button(root, text='exit', command=sys.exit)
 
 exit_button.pack(fill='x', side='bottom')
