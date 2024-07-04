@@ -102,7 +102,7 @@ def input():
         input_window.lift()
         return
     if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
-        messagebox.showerror('エラー', '日付はYYYY/MM/DD形式で入力してください')
+        messagebox.showerror('エラー', '日付はYYYY-MM-DD形式で入力してください')
         input_window.lift()
         return
     if not amount.isdigit():
@@ -114,9 +114,41 @@ def input():
     new_record = Record(date_format, amount, content) 
     print('-----------')
     total.add_record(new_record)
+    total.records.sort(key=lambda x: x.date)
     total.print_records()
     total.write_records()
     entry_clear()
+
+def totalling_input():
+    totalling_input_window = tk.Tk()
+    totalling_input_window.geometry(WINDOW_SIZE)
+    totalling_input_window.title('集計月')
+    input_frame = tk.Frame(totalling_input_window)
+    buttons_frame = tk.Frame(totalling_input_window)
+
+    total_label = tk.Label(input_frame, text='集計する年月を入力してください')
+    total_yaer_entry = tk.Entry(input_frame)
+    total_yaer_entry.insert(0, today.year)
+    total_yera_label = tk.Label(input_frame, text='年')
+    total_month_entry = tk.Entry(input_frame)
+    total_month_entry.insert(0, today.month)
+    total_month_label = tk.Label(input_frame, text='月')
+    enter_button = tk.Button(buttons_frame, text='決定', command=totalling_input_window)
+    close_button = tk.Button(buttons_frame, text='閉じる', command=totalling_input_window.destroy)
+
+    input_frame.grid(row=0, column=0, sticky=tk.EW)
+    total_label.grid(row=0, column=0)
+    total_yaer_entry.grid(row=1, column=0)
+    total_yera_label.grid(row=1, column=1)
+    total_month_entry.grid(row=1, column=2)
+    total_month_label.grid(row=1,column=3)
+    buttons_frame.grid(row=1, column=0, sticky=tk.EW, pady=10)
+    enter_button.grid(row=0, column=0)
+    close_button.grid(row=0, column=1)
+    buttons_frame.grid_columnconfigure(0, weight=1)
+    buttons_frame.grid_columnconfigure(1, weight=1)
+
+    totalling_input_window.mainloop()
 
 def totalling_window_boot():
     totalling_window = tk.Tk()
@@ -132,7 +164,7 @@ root.title('家計簿アプリ')
 root.geometry(WINDOW_SIZE)
 
 input_button = tk.Button(root, text='入力', command=input_window_boot)
-totalling_button = tk.Button(root, text='集計', command=totalling_window_boot)
+totalling_button = tk.Button(root, text='集計', command=totalling_input)
 exit_button = tk.Button(root, text='exit', command=sys.exit)
 
 exit_button.pack(fill='x', side='bottom')
