@@ -5,19 +5,26 @@ import sys
 import pickle
 from pathlib import Path
 import os
+import datetime
+
 dir = os.path.dirname(__file__)
-relative_path = 'pickled.pkl'
-file_path = os.path.join(dir,relative_path)
+file_name = 'pickled.pkl'
+file_path = os.path.join(dir, file_name)
 WINDOW_SIZE="500x200"
 class Total:
-    def __init__(self):      
-        with open(file_path, 'rb') as f:
-            records = pickle.load(f)
-            if(records):
-                self.records = records
-            else:
+    def __init__(self):  
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as f:
+                try:
+                    records = pickle.load(f)
+                    self.records = records
+                except EOFError:
+                    self.records = []
+        else:
+            with open(file_path, 'wb') as f:
                 self.records = []
-        
+                pickle.dump(self.records, f)
+
     def add_record(self, record):
         self.records.append(record)
     def write_records(self):
@@ -75,6 +82,7 @@ def input_window_boot():
 
 def input():
     date = date_entry.get()
+    
     amount = amount_entry.get()
     content = content_entry.get()
     
@@ -91,7 +99,8 @@ def input():
         input_window.lift()
         return
     
-    new_record = Record(date, amount, content) 
+    date_format = datetime.datetime.strptime(date, '%Y/%m/%d').date()
+    new_record = Record(date_format, amount, content) 
     print('-----------')
     total.add_record(new_record)
     total.print_records()
