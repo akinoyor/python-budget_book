@@ -33,18 +33,18 @@ class Total:
             pickle.dump(self.records, f)
    
         # 中身確認用あとで消す
-    def print_records(self):
-        for record in self.records:
-            print(record)
+    # def print_records(self):
+    #     for record in self.records:
+    #         print(record)
 class Record:
     def __init__(self, date, amount, content):
         self.date = date
         self.amount = amount
         self.content = content
 
-    # 内容確認用　あとで消す
-    def __str__(self):
-        return f"日付: {self.date}, 金額: {self.amount}, 内容: {self.content}"
+    #  内容確認用　あとで消す
+    # def __str__(self):
+    #     return f"日付: {self.date}, 金額: {self.amount}, 内容: {self.content}"
 
 def input_window_boot():
     global date_entry, amount_entry, content_entry, input_window
@@ -111,10 +111,8 @@ def input():
     
     date_format = datetime.datetime.strptime(date, '%Y-%m-%d').date()
     new_record = Record(date_format, amount, content) 
-    print('-----------')
     total.add_record(new_record)
     total.records.sort(key=lambda x: x.date)
-    total.print_records()
     total.write_records()
     entry_clear()
 
@@ -179,8 +177,8 @@ def delete_data(id):
     for i, record in enumerate(total.records):
         if record == remove_item:
             total.records.pop(i)
+            total.write_records()
             break
-    print(remove_item.date.year, remove_item.date.month)
     update_display(list)
 
 def update_display(list):
