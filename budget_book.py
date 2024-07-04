@@ -47,9 +47,8 @@ class Record:
         return f"日付: {self.date}, 金額: {self.amount}, 内容: {self.content}"
 
 def input_window_boot():
-    global date_entry, amount_entry, content_entry, input_window, total
+    global date_entry, amount_entry, content_entry, input_window
 
-    total = Total()
     input_window = tk.Tk()
     input_window.title('入力')
     input_window.geometry(WINDOW_SIZE)
@@ -120,6 +119,7 @@ def input():
     entry_clear()
 
 def totalling_input():
+    global total_yaer_entry, total_month_entry, totalling_input_window
     totalling_input_window = tk.Tk()
     totalling_input_window.geometry(WINDOW_SIZE)
     totalling_input_window.title('集計月')
@@ -131,9 +131,9 @@ def totalling_input():
     total_yaer_entry.insert(0, today.year)
     total_yera_label = tk.Label(input_frame, text='年')
     total_month_entry = tk.Entry(input_frame)
-    total_month_entry.insert(0, today.month)
+    total_month_entry.insert(0, str(today.month).zfill(2))
     total_month_label = tk.Label(input_frame, text='月')
-    enter_button = tk.Button(buttons_frame, text='決定', command=totalling_input_window)
+    enter_button = tk.Button(buttons_frame, text='決定', command=input_year_month)
     close_button = tk.Button(buttons_frame, text='閉じる', command=totalling_input_window.destroy)
 
     input_frame.grid(row=0, column=0, sticky=tk.EW)
@@ -150,18 +150,87 @@ def totalling_input():
 
     totalling_input_window.mainloop()
 
-def totalling_window_boot():
+def input_year_month():
+    year = total_yaer_entry.get()
+    month = total_month_entry.get()
+    if (not re.match(r'^\d{4}', year)) or (not re.match(r'^\d{2}', month)):
+        messagebox.showerror('エラー', '年月はYYYY年MM月で入力してください')
+        totalling_input_window.lift()
+    
+    year = int(year)
+    month = int(month)
+    totalling_input_window.destroy()
+    list = totalling_list_create(year, month)
+    totalling_window_boot(list)
+
+
+def totalling_list_create(year, month):
+    global list
+    list = []
+    for record in total.records:
+        if record.date.year == year:
+            if record.date.month == month:
+                list.append(record)
+    return list
+
+def delete_data(id):
+    remove_item = list[id]
+    list.pop(id)
+    for i, record in enumerate(total.records):
+        if record == remove_item:
+            total.records.pop(i)
+            break
+    print(remove_item.date.year, remove_item.date.month)
+    update_display(list)
+
+def update_display(list):
+    for item in record_list_frame.winfo_children():
+        item.destroy()
+    record_count = 1
+    record_sum = 0
+    date_label = tk.Label(record_list_frame, text='日付')
+    content_label = tk.Label(record_list_frame, text='内容')
+    amount_label = tk.Label(record_list_frame, text='金額')
+    date_label.grid(row=0, column=0)
+    content_label.grid(row=0, column=1)
+    amount_label.grid(row=0, column=2)
+    for id, record in enumerate(list):
+        record_date_label = tk.Label(record_list_frame, text=record.date)
+        record_date_label.grid(row=record_count, column=0)
+        record_content_label = tk.Label(record_list_frame, text=record.content)
+        record_content_label.grid(row=record_count, column=1)
+        record_amount_label = tk.Label(record_list_frame, text=record.amount)
+        record_amount_label.grid(row=record_count, column=2)
+        button = tk.Button(record_list_frame, text='削除', command=lambda i=id: delete_data(i))
+        button.grid(row=record_count, column=3)
+        record_count+=1
+        record_sum+=int(record.amount)
+    print(record_sum)
+
+def totalling_window_boot(list):  
+    global record_list_frame
     totalling_window = tk.Tk()
     totalling_window.title('集計')
     totalling_window.geometry(WINDOW_SIZE)
+    record_list_frame = tk.Frame(totalling_window)
+    buttons_frame = tk.Frame(totalling_window)
 
-    close_button = tk.Button(totalling_window, text='閉じる', command=totalling_window.destroy)
-    close_button.pack(fill='x', side='bottom')
+    update_display(list)
+    close_button = tk.Button(buttons_frame, text='閉じる', command=totalling_window.destroy)
+
+    record_list_frame.grid(row=0, column=0, sticky=tk.EW)
+    record_list_frame.grid_columnconfigure(0, weight=1)
+    record_list_frame.grid_columnconfigure(1, weight=4)
+    record_list_frame.grid_columnconfigure(2, weight=2) 
+    buttons_frame.grid(row=1, column=0, sticky=tk.EW)
+    close_button.grid(row=0, column=0)
+    buttons_frame.grid_columnconfigure(0, weight=1)
     totalling_window.mainloop()
 
 root = tk.Tk()
 root.title('家計簿アプリ')
 root.geometry(WINDOW_SIZE)
+total = Total()
 
 input_button = tk.Button(root, text='入力', command=input_window_boot)
 totalling_button = tk.Button(root, text='集計', command=totalling_input)
