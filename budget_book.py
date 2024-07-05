@@ -203,7 +203,10 @@ def update_display(list):
         button.grid(row=record_count, column=3)
         record_count+=1
         record_sum+=int(record.amount)
-    print(record_sum)
+    title_label = tk.Label(record_list_frame, text='合計金額')
+    sum_label = tk.Label(record_list_frame, text=record_sum)
+    title_label.grid(row=record_count, column=1)
+    sum_label.grid(row=record_count, column=2)
 
 def totalling_window_boot(list):  
     global record_list_frame
